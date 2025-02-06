@@ -17,10 +17,11 @@ public class HelloWorldController
 {
     @GetMapping("/HelloWorld")
     @ResponseBody
-    public Map<String, String> helloWorld()
+    public ResponseEntity<Map<String, String>> helloWorld()
     {
+        // Best way to return a JSON response I think.
         Map<String, String> response = new HashMap<>();
         response.put("message", "Hello World!");
-        return response;
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
