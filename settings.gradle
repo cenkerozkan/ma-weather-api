@@ -1,3 +1,4 @@
 rootProject.name = "ma-weather-api"
 
 include 'web'
+include 'common'
