@@ -12,7 +12,6 @@ subprojects {
         mavenCentral()
     }
 
-
     apply {
         plugin 'java'
         plugin 'java-library'
@@ -20,6 +19,15 @@ subprojects {
         plugin 'io.freefair.lombok'
         plugin 'io.spring.dependency-management'
         plugin 'jacoco'
+    }
+
+    dependencies {
+        // Implementation
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+        // Test Implementation
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 
     test {
