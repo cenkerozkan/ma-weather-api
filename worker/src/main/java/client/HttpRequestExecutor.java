@@ -11,11 +11,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
-/**
- * @author sa
- * @date 17.05.2021
- * @time 17:01
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,7 +23,9 @@ public class HttpRequestExecutor implements IHttpRequestExecutor
     {
         try
         {
-            URI uri = UriComponentsBuilder.fromHttpUrl(url).build().toUri();
+            // TODO: I'm not sure if 'fromUriString' is the right method to use here.
+            //       I'll check if it works or not.
+            URI uri = UriComponentsBuilder.fromUriString(url).build().toUri();
             RequestEntity<Void> requestEntity = RequestEntity.get(uri).build();
 
             ResponseEntity<T> result = restOperations.exchange(requestEntity, resultClass);
