@@ -1,4 +1,4 @@
-package client;
+package com.issola.weather.worker.client;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.RequestEntity;
@@ -12,4 +12,3 @@ public interface IHttpRequestExecutor
 {
     <T> T executeGetRequest(String url, Class<T> resultClass);
 }
-

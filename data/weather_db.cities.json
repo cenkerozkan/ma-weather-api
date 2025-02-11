@@ -1,7 +1,4 @@
 [{
-  "_id": {
-    "$oid": "67a9bdd03d6ee1edc41b4e52"
-  },
   "name": "Ankara",
   "local_names": {
     "uk": "Анкара",
@@ -69,9 +66,6 @@
   "country": "TR"
 },
 {
-  "_id": {
-    "$oid": "67a9bec63d6ee1edc41b4e54"
-  },
   "name": "London",
   "local_names": {
     "ln": "Lóndɛlɛ",
@@ -228,9 +222,6 @@
   "country": "GB"
 },
 {
-  "_id": {
-    "$oid": "67a9bf7c3d6ee1edc41b4e56"
-  },
   "name": "Barcelona",
   "local_names": {
     "hi": "बार्सॆलोना",
@@ -269,9 +260,6 @@
   "country": "ES"
 },
 {
-  "_id": {
-    "$oid": "67a9c0243d6ee1edc41b4e57"
-  },
   "name": "Tokyo",
   "local_names": {
     "nl": "Tokio",
@@ -329,9 +317,6 @@
   "country": "JP"
 },
 {
-  "_id": {
-    "$oid": "67a9c0963d6ee1edc41b4e58"
-  },
   "name": "Mumbai",
   "local_names": {
     "uk": "Мумбаї",

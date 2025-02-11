@@ -7,6 +7,7 @@ plugins {
 subprojects {
     group = 'com.issola.weather'
     version = '1.0.0'
+
     repositories {
         mavenLocal()
         mavenCentral()
@@ -16,18 +17,22 @@ subprojects {
         plugin 'java'
         plugin 'java-library'
         plugin 'org.springframework.boot'
-        plugin 'io.freefair.lombok'
         plugin 'io.spring.dependency-management'
         plugin 'jacoco'
     }
 
     dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+
         // Implementation
         implementation 'org.springframework.boot:spring-boot-starter-web'
         implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
         // Test Implementation
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testCompileOnly 'org.projectlombok:lombok:1.18.36'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
     }
 
     test {
