@@ -1,4 +1,4 @@
-package com.issola.weather.common.dto.request_results;
+package com.issola.weather.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

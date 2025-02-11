@@ -1,4 +1,4 @@
-package com.issola.weather.common.dto.request_results;
+package com.issola.weather.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,5 +12,5 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 public class LocalNamesDto {
-    private Map<String, String> local_names;
+    private Map<String, String> localNames;
 }
