@@ -38,4 +38,8 @@ subprojects {
     test {
         useJUnitPlatform()
     }
+
+    tasks.withType(JavaCompile) { // generic encoding to prevent some problems
+        options.encoding = 'UTF-8'
+    }
 }

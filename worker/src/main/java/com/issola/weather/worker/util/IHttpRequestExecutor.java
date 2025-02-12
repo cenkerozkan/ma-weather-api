@@ -1,7 +1,4 @@
-package com.issola.weather.worker.client;
-
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.RequestEntity;
+package com.issola.weather.worker.util;
 
 /**
  * @author sa

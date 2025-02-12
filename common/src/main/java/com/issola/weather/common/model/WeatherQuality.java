@@ -8,4 +8,6 @@ public class WeatherQuality
 {
     @Id
     private String id;
+
+
 }
