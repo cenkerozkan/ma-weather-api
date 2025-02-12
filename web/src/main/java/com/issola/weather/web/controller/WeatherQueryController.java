@@ -1,5 +1,8 @@
 package com.issola.weather.web.controller;
 
+import com.issola.weather.common.dto.WeatherQueryResponseDto;
+import com.issola.weather.common.repository.IWeatherQualityRepository;
+import com.issola.weather.web.service.IWeatherQualityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -13,6 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/weather")
@@ -21,21 +25,16 @@ public class WeatherQueryController
 {
     private final ICityRepository ICityRepository;
 
+    private final IWeatherQualityService weatherQualityService;
+
 
     @GetMapping("/GetWeatherQuality")
     @ResponseBody
-    public ResponseEntity<Map<String, Map<String, String>>> queryWeather(@RequestParam String city,
-                                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate)
+    public ResponseEntity<WeatherQueryResponseDto> queryWeather(@RequestParam String city,
+                                                                @RequestParam(defaultValue = "#{T(java.time.LocalDate).now().minusDays(7)}") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                                @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate)
     {
-        Map<String, String> dates = new HashMap<>();
-        dates.put("startDate", startDate.toString());
-        dates.put("endDate", endDate.toString());
-
-        Map <String, Map<String, String>> response = new HashMap<>();
-        response.put("dates", dates);
-        response.put("city", Map.of("name", city));
-
+        WeatherQueryResponseDto response = weatherQualityService.getWeatherQuality(city, startDate, endDate);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
