@@ -154,15 +154,15 @@ public class WeatherQualityService implements IWeatherQualityService
 
                     // Create ResultsDto object
                     ResultsDto results = ResultsDto.builder()
-                            .Date(date.toLocalDate())
-                            .Categories(categories)
+                            .date(date.toLocalDate())
+                            .categories(categories)
                             .build();
                     resultsDtos.add(results);
                 }
             }
             WeatherQuality weatherQuality = WeatherQuality.builder()
-                    .City(formattedCity)
-                    .Results(resultsDtos)
+                    .city(formattedCity)
+                    .results(resultsDtos)
                     .build();
             weatherQualityRepository.save(weatherQuality);
         }

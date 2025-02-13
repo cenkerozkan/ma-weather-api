@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +16,9 @@ import java.util.Map;
 @Builder
 public class ResultsDto
 {
-    private LocalDate Date;
+    @Field("date")
+    private LocalDate date;
 
-    private List<Map<String, String>> Categories;
+    @Field("categories")
+    private List<Map<String, String>> categories;
 }

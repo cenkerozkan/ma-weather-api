@@ -4,6 +4,7 @@ import com.issola.weather.common.dto.ResultsDto;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
@@ -16,7 +17,9 @@ public class WeatherQuality
     @Id
     private String id;
 
-    private String City;
+    @Field("city")
+    private String city;
 
-    private List<ResultsDto> Results;
+    @Field("results")
+    private List<ResultsDto> results;
 }
