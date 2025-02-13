@@ -88,6 +88,20 @@ public class WeatherQualityService implements IWeatherQualityService
         return weatherQualityRepository.getWeatherQualityInRange(city, startDate, endDate);
     }
 
+    private WeatherApiResultDto fetchWeatherData(String lat, String lon, long startDateEpoch, long endDateEpoch, String formattedCity)
+    {
+        try
+        {
+            logger.info("Calling OpenWeather API for the city: {}", formattedCity);
+            return openWeatherClient.getWeatherData(String.format("http://api.openweathermap.org/data/2.5/air_pollution/history?lat=%s&lon=%s&start=%d&end=%d", lat, lon, startDateEpoch, endDateEpoch));
+        }
+        catch (Exception e)
+        {
+            logger.error("Error while calling OpenWeather API: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while calling OpenWeather API");
+        }
+    }
+
     public WeatherQueryResponseDto getWeatherQuality(String city, LocalDate startDate, LocalDate endDate)
     {
         String formattedCity = capitalize(city);
@@ -97,7 +111,6 @@ public class WeatherQualityService implements IWeatherQualityService
         isDateValid(startDate, endDate);
 
         List<WeatherQuality> weatherQualities = checkDb(formattedCity ,startDate, endDate);
-        WeatherApiResultDto openWeatherResults = null;
 
         List<ResultsDto> resultsDtos = new ArrayList<>();
 
@@ -114,17 +127,7 @@ public class WeatherQualityService implements IWeatherQualityService
             String lat = cityObj.getLat();
             String lon = cityObj.getLon();
 
-
-            // Call OpenWeather API
-            try{
-                logger.info("Calling OpenWeather API for the city: {}", formattedCity);
-                openWeatherResults =  openWeatherClient.getWeatherData(String.format("http://api.openweathermap.org/data/2.5/air_pollution/history?lat=%s&lon=%s&start=%d&end=%d", lat, lon, startDateEpoch, endDateEpoch));
-            }
-            catch (Exception e)
-            {
-                logger.error("Error while calling OpenWeather API: {}", e.getMessage());
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while calling OpenWeather API");
-            }
+            WeatherApiResultDto openWeatherResults = fetchWeatherData(lat, lon, startDateEpoch, endDateEpoch, formattedCity);
 
             // Take the results from OpenWeather API
             // Find the middle day epoch 12:00:00
