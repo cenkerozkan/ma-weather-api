@@ -4,6 +4,7 @@ import com.issola.weather.common.model.City;
 import com.issola.weather.common.dto.CityNameDto;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ICityService
 {

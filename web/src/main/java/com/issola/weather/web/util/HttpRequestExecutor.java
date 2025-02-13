@@ -1,4 +1,4 @@
-package com.issola.weather.worker.util;
+package com.issola.weather.web.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +21,7 @@ import java.net.URI;
 @Slf4j
 public class HttpRequestExecutor implements IHttpRequestExecutor
 {
+
     private final RestOperations restOperations;
 
     @Override

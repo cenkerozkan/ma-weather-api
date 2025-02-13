@@ -1,4 +1,4 @@
-package com.issola.weather.worker.util;
+package com.issola.weather.web.util;
 
 /**
  * @author sa

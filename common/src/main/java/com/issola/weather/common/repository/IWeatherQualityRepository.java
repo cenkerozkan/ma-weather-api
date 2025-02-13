@@ -6,9 +6,14 @@ import org.springframework.stereotype.Repository;
 
 import com.issola.weather.common.model.WeatherQuality;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface IWeatherQualityRepository extends MongoRepository<WeatherQuality, String>
 {
+    @Query("{ 'City': ?0, 'Results.Date': { $gte: ?1, $lte: ?2 } }")
+    List<WeatherQuality>  getWeatherQualityInRange(String city, LocalDate startDate, LocalDate endDate);
+
+
 }

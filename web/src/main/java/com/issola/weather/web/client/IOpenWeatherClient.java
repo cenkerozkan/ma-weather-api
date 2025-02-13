@@ -1,4 +1,4 @@
-package com.issola.weather.worker.client;
+package com.issola.weather.web.client;
 
 import com.issola.weather.common.dto.WeatherApiResultDto;
 

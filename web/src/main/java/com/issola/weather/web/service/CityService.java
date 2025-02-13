@@ -1,16 +1,16 @@
 package com.issola.weather.web.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.issola.weather.common.model.City;
 import com.issola.weather.common.dto.CityNameDto;
 import com.issola.weather.common.repository.ICityRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Transactional
 @Service
@@ -31,6 +31,13 @@ public class CityService implements ICityService
     public City getCityByName(String name)
     {
         City city = ICityRepository.findByName(name);
+
+        // TODO: Bring a better solution to handle
+        //       these kind of scenarios.
+        if (city == null)
+        {
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT);
+        }
 
         return city;
     }
