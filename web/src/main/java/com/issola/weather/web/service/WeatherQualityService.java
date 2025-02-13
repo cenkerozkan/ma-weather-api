@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import com.issola.weather.common.dto.WeatherQueryResponseDto;
 import com.issola.weather.common.dto.ResultsDto;
-import com.issola.weather.common.dto.AirSubstanceDto;
 import com.issola.weather.common.model.City;
 import com.issola.weather.common.repository.ICityRepository;
 import com.issola.weather.web.client.IOpenWeatherClient;
@@ -89,31 +88,6 @@ public class WeatherQualityService implements IWeatherQualityService
         return weatherQualityRepository.getWeatherQualityInRange(city, startDate, endDate);
     }
 
-    // Check if there are any missing dates within the given date range
-    private List<LocalDate> checkMissingDates(List<WeatherQuality> weatherQualities, LocalDate startDate, LocalDate endDate)
-    {
-        List<LocalDate> missingDates = null;
-        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1))
-        {
-            boolean found = false;
-            for (WeatherQuality weatherQuality : weatherQualities)
-            {
-                LocalDate finalDate = date;
-                if (weatherQuality.getResults().stream().anyMatch(result -> result.getDate().equals(finalDate)))
-                {
-                    logger.info("Data found for the date: {}", date);
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                missingDates.add(date);
-            }
-        }
-        return missingDates;
-    }
-
     public WeatherQueryResponseDto getWeatherQuality(String city, LocalDate startDate, LocalDate endDate)
     {
         String formattedCity = capitalize(city);
@@ -124,9 +98,8 @@ public class WeatherQualityService implements IWeatherQualityService
 
         List<WeatherQuality> weatherQualities = checkDb(formattedCity ,startDate, endDate);
         WeatherApiResultDto openWeatherResults = null;
-        List<AirSubstanceDto> airSubstanceDtos = new ArrayList<>();
-        List<ResultsDto> resultsDtos = new ArrayList<>();
 
+        List<ResultsDto> resultsDtos = new ArrayList<>();
 
         if (weatherQualities.isEmpty())
         {
@@ -159,49 +132,39 @@ public class WeatherQualityService implements IWeatherQualityService
             // Call enum to categorize those values
             for (WeatherApiListFieldDto list : openWeatherResults.getList())
             {
-                LocalDateTime date = LocalDateTime.ofEpochSecond(list.getDt(), 0, java.time.ZoneOffset.UTC);
+                LocalDateTime date = LocalDateTime.ofEpochSecond(list.getDt(), 0, ZoneOffset.UTC);
                 if (date.getHour() == 12)
                 {
+                    // Fetch CO, SO2, O3
                     logger.info("Data found for the date: {}", date);
                     Map<String, Float> components = list.getComponents();
                     logger.info("Components: CO: {} O3: {} SO2: {}", components.get("co"), components.get("o3"), components.get("so2"));
 
-
-                    // Categorize the values in the requirements list.
+                    // Call enum to categorize those values
                     String coCategory = COPollutantCategories.getCategory(components.get("co")).toString();
                     String o3Category = O3PollutantCategories.getCategory(components.get("o3")).toString();
                     String so2Category = SO2PollutantCategories.getCategory(components.get("so2")).toString();
                     logger.info("Categories: CO: {} O3: {} SO2: {}", coCategory, o3Category, so2Category);
 
+                    // Create category maps
+                    List<Map<String, String>> categories = new ArrayList<>();
+                    categories.add(Map.of("co", coCategory));
+                    categories.add(Map.of("o3", o3Category));
+                    categories.add(Map.of("so2", so2Category));
 
-                    // Now add these into airsubstance list.
-                    Map<String, String> categoryMap = new HashMap<>();
-                    categoryMap.put("co", coCategory);
-                    categoryMap.put("o3", o3Category);
-                    categoryMap.put("so2", so2Category);
-
-                    AirSubstanceDto airSubstanceDto = AirSubstanceDto.builder()
-                            .category(categoryMap)
+                    // Create ResultsDto object
+                    ResultsDto results = ResultsDto.builder()
+                            .Date(date.toLocalDate())
+                            .Categories(categories)
                             .build();
-
-                    airSubstanceDtos.add(airSubstanceDto);
-
-                    // Then add the results to the results list.
-                    ResultsDto resultsDto = ResultsDto.builder()
-                            .date(date.toLocalDate())
-                            .categories(airSubstanceDtos)
-                            .build();
-                    resultsDtos.add(resultsDto);
+                    resultsDtos.add(results);
                 }
             }
-            // Save the results to the database
             WeatherQuality weatherQuality = WeatherQuality.builder()
-                    .city(formattedCity)
-                    .results(resultsDtos)
+                    .City(formattedCity)
+                    .Results(resultsDtos)
                     .build();
-
             weatherQualityRepository.save(weatherQuality);
-            logger.info("Data saved to the database for the city: {}", formattedCity);
         }
         return null;
     }

@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -14,7 +15,7 @@ import java.util.List;
 @Builder
 public class ResultsDto
 {
-    private LocalDate date;
+    private LocalDate Date;
 
-    private List<AirSubstanceDto> categories;
+    private List<Map<String, String>> Categories;
 }

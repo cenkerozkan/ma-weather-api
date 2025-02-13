@@ -16,7 +16,7 @@ public class WeatherQuality
     @Id
     private String id;
 
-    private String city;
+    private String City;
 
-    private List<ResultsDto> results;
+    private List<ResultsDto> Results;
 }
