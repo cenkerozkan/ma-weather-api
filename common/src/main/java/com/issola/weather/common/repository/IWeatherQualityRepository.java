@@ -1,6 +1,7 @@
 package com.issola.weather.common.repository;
 
 import com.issola.weather.common.dto.ResultsDto;
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.Update;
@@ -14,7 +15,10 @@ import java.util.List;
 @Repository
 public interface IWeatherQualityRepository extends MongoRepository<WeatherQuality, String>
 {
-    @Query("{ 'city': ?0}")
+    @Aggregation(pipeline = {
+            "{ $match: { 'city': ?0 } }",
+            "{ $project: { 'city': 1, 'results': { $sortArray: { input: '$results', sortBy: { 'date': 1 } } } } }"
+    })
     WeatherQuality getWeatherQualityByCity(String city);
 
     @Query("{ 'city': ?0 }")

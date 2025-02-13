@@ -25,7 +25,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,12 +82,7 @@ public class WeatherQualityService implements IWeatherQualityService
         }
     }
 
-    private List<WeatherQuality> checkDb(String city, LocalDate startDate, LocalDate endDate)
-    {
-        return weatherQualityRepository.getWeatherQualityInRange(city, startDate, endDate);
-    }
-
-    private WeatherApiResultDto fetchWeatherData(String lat, String lon, long startDateEpoch, long endDateEpoch, String formattedCity)
+    private WeatherApiResultDto fetchOpenWeatherData(String lat, String lon, long startDateEpoch, long endDateEpoch, String formattedCity)
     {
         try
         {
@@ -102,10 +96,10 @@ public class WeatherQualityService implements IWeatherQualityService
         }
     }
 
-    private boolean FetchBatchOfData(String city, LocalDate startDate, LocalDate endDate)
+    private boolean fetchBatchOfData(WeatherQuality weatherQuality, boolean isNew, String city, LocalDate startDate, LocalDate endDate)
     {
         String formattedCity = capitalize(city);
-        List<ResultsDto> resultsDtos = new ArrayList<>();
+        List<ResultsDto> resultsDtos = weatherQuality.getResults();
 
         // Convert dates to epoch for OpenWeather API
         long startDateEpoch = startDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
@@ -116,7 +110,7 @@ public class WeatherQualityService implements IWeatherQualityService
         String lat = cityObj.getLat();
         String lon = cityObj.getLon();
 
-        WeatherApiResultDto openWeatherResults = fetchWeatherData(lat, lon, startDateEpoch, endDateEpoch, formattedCity);
+        WeatherApiResultDto openWeatherResults = fetchOpenWeatherData(lat, lon, startDateEpoch, endDateEpoch, formattedCity);
 
         // Take the results from OpenWeather API
         // Find the middle day epoch 12:00:00
@@ -152,11 +146,14 @@ public class WeatherQualityService implements IWeatherQualityService
                 resultsDtos.add(results);
             }
         }
-        WeatherQuality weatherQuality = WeatherQuality.builder()
-                .city(formattedCity)
-                .results(resultsDtos)
-                .build();
-        weatherQualityRepository.save(weatherQuality);
+        if(isNew)
+        {
+            weatherQualityRepository.save(weatherQuality);
+        }
+        else
+        {
+            weatherQualityRepository.updateResultsByCity(formattedCity, resultsDtos);
+        }
         return true;
     }
 
@@ -166,13 +163,92 @@ public class WeatherQualityService implements IWeatherQualityService
         isCityExist(formattedCity);
         isDateValid(startDate, endDate);
 
-        List<WeatherQuality> weatherQualities = checkDb(formattedCity ,startDate, endDate);
+        WeatherQuality weatherQuality = weatherQualityRepository.getWeatherQualityByCity(formattedCity);
 
-
-        if (weatherQualities.isEmpty())
+        // No document found for the given city.
+        if (weatherQuality == null)
         {
             logger.info("Data not found in the database. Fetching from OpenWeather API.");
-            boolean isDataFetched = FetchBatchOfData(formattedCity, startDate, endDate);
+            // Create new weather quality object
+            WeatherQuality newWeatherQuality = WeatherQuality.builder()
+                    .city(formattedCity)
+                    .results(new ArrayList<>())
+                    .build();
+            boolean isDataFetched = fetchBatchOfData(newWeatherQuality, true, formattedCity, startDate, endDate);
+
+            if(isDataFetched)
+            {
+                return WeatherQueryResponseDto.builder()
+                        .city(formattedCity)
+                        .results(weatherQualityRepository.getWeatherQualityByCity(formattedCity).getResults())
+                        .build();
+            }
+        }
+        // Case: Data exists but there might be missing parts.
+        else
+        {
+            logger.info("Data found in the database. Checking for missing parts.");
+
+            // Create an array of dates to check
+            List<ResultsDto> resultsDtos = weatherQuality.getResults();
+            List<LocalDate> requestedDates = new ArrayList<>();
+            List<LocalDate> missingDates = new ArrayList<>();
+
+            // Generate all dates between start and end (inclusive)
+            for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1))
+            {
+                requestedDates.add(date);
+            }
+
+            // Find missing dates by comparing with existing results
+            for (LocalDate date : requestedDates)
+            {
+
+                boolean dateExists = resultsDtos.stream()
+                        .anyMatch(result -> result.getDate().equals(date));
+
+                if (!dateExists)
+                {
+                    logger.info("Missing data for date: {}", date);
+                    missingDates.add(date);
+                }
+            }
+
+            // If there are missing dates, fetch them
+            if (!missingDates.isEmpty())
+            {
+                logger.info("Fetching missing data for {} dates", missingDates.size());
+                // Find consecutive date ranges to minimize API calls
+                for (int i = 0; i < missingDates.size();)
+                {
+                    LocalDate rangeStart = missingDates.get(i);
+                    LocalDate rangeEnd = rangeStart;
+
+                    // Find consecutive dates
+                    while (i + 1 < missingDates.size() &&
+                            missingDates.get(i + 1).equals(rangeEnd.plusDays(1)))
+                    {
+                        rangeEnd = missingDates.get(i + 1);
+                        i++;
+                    }
+
+                    // Fetch data for this range
+                    fetchBatchOfData(weatherQuality, false, formattedCity, rangeStart, rangeEnd);
+                    i++;
+                }
+
+                // Return complete data
+                return WeatherQueryResponseDto.builder()
+                        .city(formattedCity)
+                        .results(weatherQualityRepository.getWeatherQualityByCity(formattedCity).getResults())
+                        .build();
+            }
+
+            // If no missing dates, return existing data
+            return WeatherQueryResponseDto.builder()
+                    .city(formattedCity)
+                    .results(resultsDtos)
+                    .build();
         }
         return null;
     }
