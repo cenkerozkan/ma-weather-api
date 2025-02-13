@@ -102,8 +102,8 @@ public class WeatherQualityService implements IWeatherQualityService
         List<ResultsDto> resultsDtos = weatherQuality.getResults();
 
         // Convert dates to epoch for OpenWeather API
-        long startDateEpoch = startDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
-        long endDateEpoch = endDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+        long startDateEpoch = startDate.atTime(12, 0, 0).toEpochSecond(ZoneOffset.UTC);
+        long endDateEpoch = endDate.atTime(12, 0, 0).toEpochSecond(ZoneOffset.UTC);
 
         // Retrieve lat and lon for the city
         City cityObj = cityRepository.findByName(formattedCity);
@@ -194,7 +194,7 @@ public class WeatherQualityService implements IWeatherQualityService
             List<LocalDate> requestedDates = new ArrayList<>();
             List<LocalDate> missingDates = new ArrayList<>();
 
-            // Generate all dates between start and end (inclusive)
+            // Generate all dates between start and end.
             for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1))
             {
                 requestedDates.add(date);
@@ -218,7 +218,6 @@ public class WeatherQualityService implements IWeatherQualityService
             if (!missingDates.isEmpty())
             {
                 logger.info("Fetching missing data for {} dates", missingDates.size());
-                // Find consecutive date ranges to minimize API calls
                 for (int i = 0; i < missingDates.size();)
                 {
                     LocalDate rangeStart = missingDates.get(i);
@@ -232,19 +231,16 @@ public class WeatherQualityService implements IWeatherQualityService
                         i++;
                     }
 
-                    // Fetch data for this range
                     fetchBatchOfData(weatherQuality, false, formattedCity, rangeStart, rangeEnd);
                     i++;
                 }
 
-                // Return complete data
                 return WeatherQueryResponseDto.builder()
                         .city(formattedCity)
                         .results(weatherQualityRepository.getWeatherQualityByCity(formattedCity).getResults())
                         .build();
             }
 
-            // If no missing dates, return existing data
             return WeatherQueryResponseDto.builder()
                     .city(formattedCity)
                     .results(resultsDtos)
