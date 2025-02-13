@@ -102,72 +102,77 @@ public class WeatherQualityService implements IWeatherQualityService
         }
     }
 
+    private boolean FetchBatchOfData(String city, LocalDate startDate, LocalDate endDate)
+    {
+        String formattedCity = capitalize(city);
+        List<ResultsDto> resultsDtos = new ArrayList<>();
+
+        // Convert dates to epoch for OpenWeather API
+        long startDateEpoch = startDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+        long endDateEpoch = endDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
+
+        // Retrieve lat and lon for the city
+        City cityObj = cityRepository.findByName(formattedCity);
+        String lat = cityObj.getLat();
+        String lon = cityObj.getLon();
+
+        WeatherApiResultDto openWeatherResults = fetchWeatherData(lat, lon, startDateEpoch, endDateEpoch, formattedCity);
+
+        // Take the results from OpenWeather API
+        // Find the middle day epoch 12:00:00
+        // Fetch CO, SO2, O3
+        // Call enum to categorize those values
+        for (WeatherApiListFieldDto list : openWeatherResults.getList())
+        {
+            LocalDateTime date = LocalDateTime.ofEpochSecond(list.getDt(), 0, ZoneOffset.UTC);
+            if (date.getHour() == 12)
+            {
+                // Fetch CO, SO2, O3
+                logger.info("Data found for the date: {}", date);
+                Map<String, Float> components = list.getComponents();
+                logger.info("Components: CO: {} O3: {} SO2: {}", components.get("co"), components.get("o3"), components.get("so2"));
+
+                // Call enum to categorize those values
+                String coCategory = COPollutantCategories.getCategory(components.get("co")).toString();
+                String o3Category = O3PollutantCategories.getCategory(components.get("o3")).toString();
+                String so2Category = SO2PollutantCategories.getCategory(components.get("so2")).toString();
+                logger.info("Categories: CO: {} O3: {} SO2: {}", coCategory, o3Category, so2Category);
+
+                // Create category maps
+                List<Map<String, String>> categories = new ArrayList<>();
+                categories.add(Map.of("co", coCategory));
+                categories.add(Map.of("o3", o3Category));
+                categories.add(Map.of("so2", so2Category));
+
+                // Create ResultsDto object
+                ResultsDto results = ResultsDto.builder()
+                        .date(date.toLocalDate())
+                        .categories(categories)
+                        .build();
+                resultsDtos.add(results);
+            }
+        }
+        WeatherQuality weatherQuality = WeatherQuality.builder()
+                .city(formattedCity)
+                .results(resultsDtos)
+                .build();
+        weatherQualityRepository.save(weatherQuality);
+        return true;
+    }
+
     public WeatherQueryResponseDto getWeatherQuality(String city, LocalDate startDate, LocalDate endDate)
     {
         String formattedCity = capitalize(city);
-
-        // Void control methods.
         isCityExist(formattedCity);
         isDateValid(startDate, endDate);
 
         List<WeatherQuality> weatherQualities = checkDb(formattedCity ,startDate, endDate);
 
-        List<ResultsDto> resultsDtos = new ArrayList<>();
 
         if (weatherQualities.isEmpty())
         {
-            logger.warn("No data found in the database for the given date range: {} - {}", startDate, endDate);
-
-            // Convert dates to epoch for OpenWeather API
-            long startDateEpoch = startDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
-            long endDateEpoch = endDate.atStartOfDay(ZoneOffset.UTC).toEpochSecond();
-
-            // Retrieve lat and lon for the city
-            City cityObj = cityRepository.findByName(formattedCity);
-            String lat = cityObj.getLat();
-            String lon = cityObj.getLon();
-
-            WeatherApiResultDto openWeatherResults = fetchWeatherData(lat, lon, startDateEpoch, endDateEpoch, formattedCity);
-
-            // Take the results from OpenWeather API
-            // Find the middle day epoch 12:00:00
-            // Fetch CO, SO2, O3
-            // Call enum to categorize those values
-            for (WeatherApiListFieldDto list : openWeatherResults.getList())
-            {
-                LocalDateTime date = LocalDateTime.ofEpochSecond(list.getDt(), 0, ZoneOffset.UTC);
-                if (date.getHour() == 12)
-                {
-                    // Fetch CO, SO2, O3
-                    logger.info("Data found for the date: {}", date);
-                    Map<String, Float> components = list.getComponents();
-                    logger.info("Components: CO: {} O3: {} SO2: {}", components.get("co"), components.get("o3"), components.get("so2"));
-
-                    // Call enum to categorize those values
-                    String coCategory = COPollutantCategories.getCategory(components.get("co")).toString();
-                    String o3Category = O3PollutantCategories.getCategory(components.get("o3")).toString();
-                    String so2Category = SO2PollutantCategories.getCategory(components.get("so2")).toString();
-                    logger.info("Categories: CO: {} O3: {} SO2: {}", coCategory, o3Category, so2Category);
-
-                    // Create category maps
-                    List<Map<String, String>> categories = new ArrayList<>();
-                    categories.add(Map.of("co", coCategory));
-                    categories.add(Map.of("o3", o3Category));
-                    categories.add(Map.of("so2", so2Category));
-
-                    // Create ResultsDto object
-                    ResultsDto results = ResultsDto.builder()
-                            .date(date.toLocalDate())
-                            .categories(categories)
-                            .build();
-                    resultsDtos.add(results);
-                }
-            }
-            WeatherQuality weatherQuality = WeatherQuality.builder()
-                    .city(formattedCity)
-                    .results(resultsDtos)
-                    .build();
-            weatherQualityRepository.save(weatherQuality);
+            logger.info("Data not found in the database. Fetching from OpenWeather API.");
+            boolean isDataFetched = FetchBatchOfData(formattedCity, startDate, endDate);
         }
         return null;
     }
