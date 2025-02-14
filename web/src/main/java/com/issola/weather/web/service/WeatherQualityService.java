@@ -119,7 +119,7 @@ public class WeatherQualityService implements IWeatherQualityService
         for (WeatherApiListFieldDto list : openWeatherResults.getList())
         {
             LocalDateTime date = LocalDateTime.ofEpochSecond(list.getDt(), 0, ZoneOffset.UTC);
-            if (date.getHour() == 12)
+            if (date.getHour() == 11)
             {
                 // Fetch CO, SO2, O3
                 logger.info("Data found for the date: {}", date);
@@ -178,9 +178,10 @@ public class WeatherQualityService implements IWeatherQualityService
 
             if(isDataFetched)
             {
+                WeatherQuality finalWeatherQuality = weatherQualityRepository.getWeatherQualityByCity(formattedCity);
                 return WeatherQueryResponseDto.builder()
                         .city(formattedCity)
-                        .results(weatherQualityRepository.getWeatherQualityByCity(formattedCity).getResults())
+                        .results(finalWeatherQuality.getResults())
                         .build();
             }
         }
