@@ -1,5 +1,6 @@
 package com.issola.weather.common.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Document(collection = "cities")
 @Getter
+@Builder
 public class City
 {
     @Id
