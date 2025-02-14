@@ -114,7 +114,7 @@ public class WeatherQualityService implements IWeatherQualityService
         for (WeatherApiListFieldDto list : openWeatherResults.getList())
         {
             LocalDateTime date = LocalDateTime.ofEpochSecond(list.getDt(), 0, ZoneOffset.UTC);
-            if (date.getHour() == 11)
+            if (date.getHour() == 12)
             {
                 // Fetch CO, SO2, O3
                 logger.info("Data found for the date: {}", date);
