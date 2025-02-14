@@ -1,7 +1,6 @@
 package com.issola.weather.web.controller;
 
 import com.issola.weather.common.dto.WeatherQueryResponseDto;
-import com.issola.weather.common.repository.IWeatherQualityRepository;
 import com.issola.weather.web.service.IWeatherQualityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -9,22 +8,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.issola.weather.common.model.City;
-import com.issola.weather.common.repository.ICityRepository;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/weather")
 @RequiredArgsConstructor
 public class WeatherQueryController
 {
-    private final ICityRepository ICityRepository;
-
     private final IWeatherQualityService weatherQualityService;
 
 
@@ -39,10 +32,30 @@ public class WeatherQueryController
     }
 
     @DeleteMapping("/DeleteRecord")
-    public ResponseEntity<Map<String, String>> deleteRecord()
+    public ResponseEntity<Map<String, String>> deleteRecord(@RequestParam String city,
+                                                            @RequestParam(defaultValue = "#{T(java.time.LocalDate).now().minusDays(7)}") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                            @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate)
     {
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Delete Record!");
+        boolean isDeleted = weatherQualityService.deleteRecord(city, startDate, endDate);
+
+        if (isDeleted)
+        {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Record deleted successfully");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        else
+        {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Record not found");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/GetAllAirDataByCity")
+    public ResponseEntity<WeatherQueryResponseDto> getAllAirDataByCity(@RequestParam String city)
+    {
+        WeatherQueryResponseDto response = weatherQualityService.getAllAirDataByCity(city);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

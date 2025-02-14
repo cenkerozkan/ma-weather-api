@@ -245,4 +245,41 @@ public class WeatherQualityService implements IWeatherQualityService
         }
         return null;
     }
+
+    public boolean deleteRecord(String city, LocalDate startDate, LocalDate endDate)
+    {
+        logger.info("Deleting record for the city: {} between {} and {}", city, startDate, endDate);
+
+        // First retrieve the document for the given city.
+        WeatherQuality weatherQuality = weatherQualityRepository.getWeatherQualityByCity(city);
+        List<ResultsDto> resultsList = weatherQuality.getResults();
+
+        // Create a list of dates to delete
+        List<LocalDate> datesToDelete = new ArrayList<>();
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1))
+        {
+            datesToDelete.add(date);
+        }
+
+        resultsList.removeIf(result -> datesToDelete.contains(result.getDate()));
+        // Save the updated results
+        weatherQualityRepository.updateResultsByCity(city, resultsList);
+        return true;
+    }
+
+    public WeatherQueryResponseDto getAllAirDataByCity(String city)
+    {
+        String formattedCity = capitalize(city);
+        isCityExist(formattedCity);
+        WeatherQuality weatherQuality = weatherQualityRepository.getWeatherQualityByCity(formattedCity);
+        if (weatherQuality == null)
+        {
+            logger.error("Data not found for the city: {}", formattedCity);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Data not found for the city.");
+        }
+        return WeatherQueryResponseDto.builder()
+                .city(formattedCity)
+                .results(weatherQuality.getResults())
+                .build();
+    }
 }
