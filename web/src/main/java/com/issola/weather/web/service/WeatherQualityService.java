@@ -50,11 +50,6 @@ public class WeatherQualityService implements IWeatherQualityService
         return firstChar + restOfString;
     }
 
-    private long convertDateToEpoch(LocalDate date)
-    {
-        return date.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC);
-    }
-
     private void isCityExist (String cityName)
     {
 
