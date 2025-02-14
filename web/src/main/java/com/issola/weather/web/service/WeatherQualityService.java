@@ -193,6 +193,7 @@ public class WeatherQualityService implements IWeatherQualityService
             // Generate all dates between start and end.
             for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1))
             {
+                logger.info("Checking for date: {}", date);
                 requestedDates.add(date);
             }
 
