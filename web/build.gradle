@@ -8,4 +8,7 @@ dependencies {
 
     // Test Implementation
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }
