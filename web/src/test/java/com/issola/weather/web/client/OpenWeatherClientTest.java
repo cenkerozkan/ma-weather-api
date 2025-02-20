@@ -55,6 +55,8 @@ class OpenWeatherClientTest {
 
     @Test
     void getWeatherData_ReturnsWeatherApiResult() {
+        // TODO: Refactor this test method accordingly with the new
+        //       client.
         String baseUrl = "http://api.example.com/weather";
         String expectedUrl = baseUrl + "&appid=" + API_KEY;
 

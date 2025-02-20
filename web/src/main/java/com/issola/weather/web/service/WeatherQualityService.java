@@ -25,6 +25,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -36,7 +37,7 @@ public class WeatherQualityService implements IWeatherQualityService
     private final IWeatherQualityRepository weatherQualityRepository;
     private final IOpenWeatherClient openWeatherClient;
 
-    private boolean fetchBatchOfData(WeatherQuality weatherQuality, boolean isNew, String city, LocalDate startDate, LocalDate endDate)
+    private List<ResultsDto> fetchBatchOfData(WeatherQuality weatherQuality, boolean isNew, String city, LocalDate startDate, LocalDate endDate)
     {
         String formattedCity = city.substring(0,1).toUpperCase() + city.substring(1).toLowerCase();
         List<ResultsDto> resultsDtos = weatherQuality.getResults();
@@ -88,13 +89,14 @@ public class WeatherQualityService implements IWeatherQualityService
         }
         if(isNew)
         {
-            weatherQualityRepository.save(weatherQuality);
+            // Save the results before returning them.
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> weatherQualityRepository.save(weatherQuality));
         }
         else
         {
-            weatherQualityRepository.updateResultsByCity(formattedCity, resultsDtos);
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> weatherQualityRepository.updateResultsByCity(formattedCity, resultsDtos));
         }
-        return true;
+        return resultsDtos;
     }
 
     @Override
@@ -102,6 +104,7 @@ public class WeatherQualityService implements IWeatherQualityService
     {
         String formattedCity = city.substring(0,1).toUpperCase() + city.substring(1).toLowerCase();
         logger.info("Getting weather quality for the city: {} between {} and {}", formattedCity, startDate, endDate);
+
         if(!cityRepository.isCityExistsByName(formattedCity))
         {
             logger.error("Invalid city given by the user: {}", formattedCity);
@@ -119,17 +122,12 @@ public class WeatherQualityService implements IWeatherQualityService
                     .city(formattedCity)
                     .results(new ArrayList<>())
                     .build();
-            boolean isDataFetched = fetchBatchOfData(newWeatherQuality, true, formattedCity, startDate, endDate);
-
-            if(isDataFetched)
-            {
-                WeatherQuality finalWeatherQuality = weatherQualityRepository.getWeatherQualityByCity(formattedCity);
-                return WeatherQueryResponseDto.builder()
-                        .city(formattedCity)
-                        .results(finalWeatherQuality.getResults())
-                        .build();
-            }
+            return WeatherQueryResponseDto.builder()
+                    .city(formattedCity)
+                    .results(fetchBatchOfData(newWeatherQuality, true, formattedCity, startDate, endDate))
+                    .build();
         }
+
         // Case: Data exists but there might be missing parts.
         else
         {
@@ -138,23 +136,16 @@ public class WeatherQualityService implements IWeatherQualityService
             // Create an array of dates to check
             List<ResultsDto> resultsDtos = weatherQuality.getResults();
             List<LocalDate> requestedDates = startDate.datesUntil(endDate.plusDays(1)).toList();
-            List<LocalDate> missingDates = new ArrayList<>();
-
-            // Find missing dates by comparing with existing results
+            List<LocalDate> missingDates = weatherQualityRepository.findMissingDates(formattedCity, startDate, endDate).getDates();
+            WeatherQueryResponseDto responseDto = null;
+            // Log dates for debug
             for (LocalDate date : requestedDates)
             {
-
-                boolean dateExists = resultsDtos.stream()
-                        .anyMatch(result -> result.getDate().equals(date));
-
-                if (!dateExists)
-                {
-                    logger.info("Missing data for date: {}", date);
-                    missingDates.add(date);
-                }
+                logger.info("Requested date: {}", date);
             }
 
             // If there are missing dates, fetch them
+            // TODO: Change the algorithm of finding missing date ranges.
             if (!missingDates.isEmpty())
             {
                 logger.info("Fetching missing data for {} dates", missingDates.size());
@@ -171,7 +162,8 @@ public class WeatherQualityService implements IWeatherQualityService
                         i++;
                     }
 
-                    fetchBatchOfData(weatherQuality, false, formattedCity, rangeStart, rangeEnd);
+                    logger.info("Results are {}", fetchBatchOfData(weatherQuality, false, formattedCity, rangeStart, rangeEnd));
+
                     i++;
                 }
 
@@ -180,13 +172,11 @@ public class WeatherQualityService implements IWeatherQualityService
                         .results(weatherQualityRepository.getWeatherQualityByCity(formattedCity).getResults())
                         .build();
             }
-
             return WeatherQueryResponseDto.builder()
                     .city(formattedCity)
                     .results(resultsDtos)
                     .build();
         }
-        return null;
     }
 
     @Override
