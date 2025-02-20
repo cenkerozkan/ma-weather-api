@@ -25,7 +25,6 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -48,24 +47,6 @@ public class WeatherQualityService implements IWeatherQualityService
         String restOfString = str.substring(1).toLowerCase();
 
         return firstChar + restOfString;
-    }
-
-    // TODO: Implement a new method in city repository for this.
-    private void isCityExist (String cityName)
-    {
-
-        List<City> cities = cityRepository.findAll();
-
-        for (City city : cities)
-        {
-            if (city.getLocalNames().containsValue(cityName))
-            {
-                return;
-            }
-
-        }
-        logger.error("Invalid city given by the user: {}", cityName);
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
     }
 
     private WeatherApiResultDto fetchOpenWeatherData(String lat, String lon, long startDateEpoch, long endDateEpoch, String formattedCity)
@@ -147,7 +128,11 @@ public class WeatherQualityService implements IWeatherQualityService
     public WeatherQueryResponseDto getWeatherQuality(String city, LocalDate startDate, LocalDate endDate)
     {
         String formattedCity = capitalize(city);
-        isCityExist(formattedCity);
+        if(!cityRepository.isCityExistsByName(formattedCity))
+        {
+            logger.error("Invalid city given by the user: {}", formattedCity);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
+        }
 
         WeatherQuality weatherQuality = weatherQualityRepository.getWeatherQualityByCity(formattedCity);
 
@@ -263,7 +248,14 @@ public class WeatherQualityService implements IWeatherQualityService
     public WeatherQueryResponseDto getAllAirDataByCity(String city)
     {
         String formattedCity = capitalize(city);
-        isCityExist(formattedCity);
+
+        // TODO: When bool method works, implement here (city repo)
+        if(!cityRepository.isCityExistsByName(formattedCity))
+        {
+            logger.error("Invalid city given by the user: {}", formattedCity);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
+        }
+
         WeatherQuality weatherQuality = weatherQualityRepository.getWeatherQualityByCity(formattedCity);
         if (weatherQuality == null)
         {

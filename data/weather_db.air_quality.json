@@ -1,0 +1,329 @@
+[{
+  "_id": {
+    "$oid": "67aefa361875a71b853a1dda"
+  },
+  "city": "Ankara",
+  "results": [
+    {
+      "date": {
+        "$date": "2021-12-31T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-01T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-02T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-03T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-04T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-05T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-06T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-07T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-08T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-09T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-10T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-11T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-12T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-13T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-14T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-15T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-16T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-17T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-18T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    },
+    {
+      "date": {
+        "$date": "2022-01-19T21:00:00.000Z"
+      },
+      "categories": [
+        {
+          "co": "Hazardous"
+        },
+        {
+          "o3": "Satisfactory"
+        },
+        {
+          "so2": "Satisfactory"
+        }
+      ]
+    }
+  ],
+  "_class": "com.issola.weather.common.model.WeatherQuality"
+}]
