@@ -128,7 +128,7 @@ public class WeatherQualityService implements IWeatherQualityService
     public WeatherQueryResponseDto getWeatherQuality(String city, LocalDate startDate, LocalDate endDate)
     {
         String formattedCity = capitalize(city);
-        if(!cityRepository.isCityExistsByName(formattedCity))
+        if(cityRepository.isCityExistsByName(formattedCity))
         {
             logger.error("Invalid city given by the user: {}", formattedCity);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
@@ -250,7 +250,7 @@ public class WeatherQualityService implements IWeatherQualityService
         String formattedCity = capitalize(city);
 
         // TODO: When bool method works, implement here (city repo)
-        if(!cityRepository.isCityExistsByName(formattedCity))
+        if(cityRepository.isCityExistsByName(formattedCity))
         {
             logger.error("Invalid city given by the user: {}", formattedCity);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
