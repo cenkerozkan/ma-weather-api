@@ -9,6 +9,4 @@ public interface IWeatherQualityService
     WeatherQueryResponseDto getWeatherQuality(String city, LocalDate startDate, LocalDate endDate);
 
     boolean deleteRecord(String city, LocalDate startDate, LocalDate endDate);
-
-    WeatherQueryResponseDto getAllAirDataByCity(String city);
 }

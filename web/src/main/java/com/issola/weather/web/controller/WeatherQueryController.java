@@ -58,11 +58,4 @@ public class WeatherQueryController
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
-
-    @GetMapping("/GetAllAirDataByCity")
-    public ResponseEntity<WeatherQueryResponseDto> getAllAirDataByCity(@RequestParam String city)
-    {
-        WeatherQueryResponseDto response = weatherQualityService.getAllAirDataByCity(city);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
 }

@@ -36,36 +36,9 @@ public class WeatherQualityService implements IWeatherQualityService
     private final IWeatherQualityRepository weatherQualityRepository;
     private final IOpenWeatherClient openWeatherClient;
 
-    // TODO: Remove this private method, do it in somewhere else.
-    private String capitalize(String str)
-    {
-        if (str == null || str.isEmpty()) {
-            return str; // Handle null or empty strings
-        }
-
-        char firstChar = Character.toUpperCase(str.charAt(0));
-        String restOfString = str.substring(1).toLowerCase();
-
-        return firstChar + restOfString;
-    }
-
-    private WeatherApiResultDto fetchOpenWeatherData(String lat, String lon, long startDateEpoch, long endDateEpoch, String formattedCity)
-    {
-        try
-        {
-            logger.info("Calling OpenWeather API for the city: {}", formattedCity);
-            return openWeatherClient.getWeatherData(String.format("http://api.openweathermap.org/data/2.5/air_pollution/history?lat=%s&lon=%s&start=%d&end=%d", lat, lon, startDateEpoch, endDateEpoch));
-        }
-        catch (Exception e)
-        {
-            logger.error("Error while calling OpenWeather API: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while calling OpenWeather API");
-        }
-    }
-
     private boolean fetchBatchOfData(WeatherQuality weatherQuality, boolean isNew, String city, LocalDate startDate, LocalDate endDate)
     {
-        String formattedCity = capitalize(city);
+        String formattedCity = city.substring(0,1).toUpperCase() + city.substring(1).toLowerCase();
         List<ResultsDto> resultsDtos = weatherQuality.getResults();
 
         // Convert dates to epoch for OpenWeather API
@@ -77,7 +50,7 @@ public class WeatherQualityService implements IWeatherQualityService
         String lat = cityObj.getLat();
         String lon = cityObj.getLon();
 
-        WeatherApiResultDto openWeatherResults = fetchOpenWeatherData(lat, lon, startDateEpoch, endDateEpoch, formattedCity);
+        WeatherApiResultDto openWeatherResults = openWeatherClient.getWeatherData(lat, lon, startDateEpoch, endDateEpoch, formattedCity);
 
         // Take the results from OpenWeather API
         // Find the middle day epoch 12:00:00
@@ -127,8 +100,9 @@ public class WeatherQualityService implements IWeatherQualityService
     @Override
     public WeatherQueryResponseDto getWeatherQuality(String city, LocalDate startDate, LocalDate endDate)
     {
-        String formattedCity = capitalize(city);
-        if(cityRepository.isCityExistsByName(formattedCity))
+        String formattedCity = city.substring(0,1).toUpperCase() + city.substring(1).toLowerCase();
+        logger.info("Getting weather quality for the city: {} between {} and {}", formattedCity, startDate, endDate);
+        if(!cityRepository.isCityExistsByName(formattedCity))
         {
             logger.error("Invalid city given by the user: {}", formattedCity);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
@@ -163,15 +137,8 @@ public class WeatherQualityService implements IWeatherQualityService
 
             // Create an array of dates to check
             List<ResultsDto> resultsDtos = weatherQuality.getResults();
-            List<LocalDate> requestedDates = new ArrayList<>();
+            List<LocalDate> requestedDates = startDate.datesUntil(endDate.plusDays(1)).toList();
             List<LocalDate> missingDates = new ArrayList<>();
-
-            // Generate all dates between start and end.
-            for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1))
-            {
-                logger.info("Checking for date: {}", date);
-                requestedDates.add(date);
-            }
 
             // Find missing dates by comparing with existing results
             for (LocalDate date : requestedDates)
@@ -225,6 +192,12 @@ public class WeatherQualityService implements IWeatherQualityService
     @Override
     public boolean deleteRecord(String city, LocalDate startDate, LocalDate endDate)
     {
+        String formattedCity = city.substring(0,1).toUpperCase() + city.substring(1).toLowerCase();
+        if (!cityRepository.isCityExistsByName(formattedCity))
+        {
+            logger.error("Invalid city given by the user: {}", formattedCity);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
+        }
         logger.info("Deleting record for the city: {} between {} and {}", city, startDate, endDate);
 
         // First retrieve the document for the given city.
@@ -242,29 +215,5 @@ public class WeatherQualityService implements IWeatherQualityService
         // Save the updated results
         weatherQualityRepository.updateResultsByCity(city, resultsList);
         return true;
-    }
-
-    @Override
-    public WeatherQueryResponseDto getAllAirDataByCity(String city)
-    {
-        String formattedCity = capitalize(city);
-
-        // TODO: When bool method works, implement here (city repo)
-        if(cityRepository.isCityExistsByName(formattedCity))
-        {
-            logger.error("Invalid city given by the user: {}", formattedCity);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
-        }
-
-        WeatherQuality weatherQuality = weatherQualityRepository.getWeatherQualityByCity(formattedCity);
-        if (weatherQuality == null)
-        {
-            logger.error("Data not found for the city: {}", formattedCity);
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Data not found for the city.");
-        }
-        return WeatherQueryResponseDto.builder()
-                .city(formattedCity)
-                .results(weatherQuality.getResults())
-                .build();
     }
 }

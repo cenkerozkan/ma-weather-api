@@ -21,9 +21,6 @@ public interface ICityRepository extends MongoRepository<City, String>
     @Query("{ 'name' : ?0 }")
     List<City> findCityByName(String name);
 
-    @Query
-    City findByLocalNames(String name);
-
     @Query(value = "{}", fields = "{ name: 1, _id: 0 }")
     List<String> getAllCityNames();
 }
