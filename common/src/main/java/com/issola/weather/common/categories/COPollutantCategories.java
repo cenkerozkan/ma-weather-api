@@ -1,5 +1,10 @@
 package com.issola.weather.common.categories;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum COPollutantCategories
 {
     GOOD("Good", 0),
@@ -12,13 +17,7 @@ public enum COPollutantCategories
     private final String category;
     private final float threshold;
 
-    COPollutantCategories(String category, float threshold)
-    {
-        this.category = category;
-        this.threshold = threshold;
-    }
-
-    public static COPollutantCategories getCategory(float value)
+    public static COPollutantCategories getCategoryFromValue(float value)
     {
         for (COPollutantCategories category : COPollutantCategories.values())
         {
@@ -28,11 +27,5 @@ public enum COPollutantCategories
             }
         }
         return HAZARDOUS; // Default to HAZARDOUS if value exceeds all thresholds
-    }
-
-    @Override
-    public String toString()
-    {
-        return this.category;
     }
 }

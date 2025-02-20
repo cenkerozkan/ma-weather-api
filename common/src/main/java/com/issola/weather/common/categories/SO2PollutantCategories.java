@@ -1,5 +1,10 @@
 package com.issola.weather.common.categories;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum SO2PollutantCategories
 {
     GOOD("Good", 0),
@@ -12,13 +17,7 @@ public enum SO2PollutantCategories
     private final String category;
     private final float threshold;
 
-    SO2PollutantCategories(String category, float threshold)
-    {
-        this.category = category;
-        this.threshold = threshold;
-    }
-
-    public static SO2PollutantCategories getCategory(float value)
+    public static SO2PollutantCategories getCategoryFromValue(float value)
     {
         for (SO2PollutantCategories category : SO2PollutantCategories.values())
         {

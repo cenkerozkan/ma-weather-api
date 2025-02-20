@@ -1,25 +1,23 @@
 package com.issola.weather.web.service;
 
+import com.issola.weather.common.categories.COPollutantCategories;
+import com.issola.weather.common.categories.O3PollutantCategories;
+import com.issola.weather.common.categories.SO2PollutantCategories;
+import com.issola.weather.common.dto.ResultsDto;
 import com.issola.weather.common.dto.WeatherApiListFieldDto;
 import com.issola.weather.common.dto.WeatherApiResultDto;
+import com.issola.weather.common.dto.WeatherQueryResponseDto;
+import com.issola.weather.common.model.City;
 import com.issola.weather.common.model.WeatherQuality;
+import com.issola.weather.common.repository.ICityRepository;
 import com.issola.weather.common.repository.IWeatherQualityRepository;
+import com.issola.weather.web.client.IOpenWeatherClient;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.issola.weather.common.dto.WeatherQueryResponseDto;
-import com.issola.weather.common.dto.ResultsDto;
-import com.issola.weather.common.model.City;
-import com.issola.weather.common.repository.ICityRepository;
-import com.issola.weather.web.client.IOpenWeatherClient;
-import com.issola.weather.common.categories.SO2PollutantCategories;
-import com.issola.weather.common.categories.COPollutantCategories;
-import com.issola.weather.common.categories.O3PollutantCategories;
-
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,6 +25,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -38,6 +37,7 @@ public class WeatherQualityService implements IWeatherQualityService
     private final IWeatherQualityRepository weatherQualityRepository;
     private final IOpenWeatherClient openWeatherClient;
 
+    // TODO: Remove this private method, do it in somewhere else.
     private String capitalize(String str)
     {
         if (str == null || str.isEmpty()) {
@@ -50,6 +50,7 @@ public class WeatherQualityService implements IWeatherQualityService
         return firstChar + restOfString;
     }
 
+    // TODO: Implement a new method in city repository for this.
     private void isCityExist (String cityName)
     {
 
@@ -65,16 +66,6 @@ public class WeatherQualityService implements IWeatherQualityService
         }
         logger.error("Invalid city given by the user: {}", cityName);
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "City not found.");
-    }
-
-    private void isDateValid (LocalDate startDate, LocalDate endDate)
-    {
-        logger.info("Dates given by the user: {} - {}", startDate, endDate);
-
-        if (startDate.isBefore(LocalDate.of(2020, 10, 27)) || endDate.isBefore(LocalDate.of(2020, 10, 27)))
-        {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date. Only queries allowed after 2020-10-27");
-        }
     }
 
     private WeatherApiResultDto fetchOpenWeatherData(String lat, String lon, long startDateEpoch, long endDateEpoch, String formattedCity)
@@ -122,9 +113,9 @@ public class WeatherQualityService implements IWeatherQualityService
                 logger.info("Components: CO: {} O3: {} SO2: {}", components.get("co"), components.get("o3"), components.get("so2"));
 
                 // Call enum to categorize those values
-                String coCategory = COPollutantCategories.getCategory(components.get("co")).toString();
-                String o3Category = O3PollutantCategories.getCategory(components.get("o3")).toString();
-                String so2Category = SO2PollutantCategories.getCategory(components.get("so2")).toString();
+                String coCategory = COPollutantCategories.getCategoryFromValue(components.get("co")).getCategory();
+                String o3Category = O3PollutantCategories.getCategoryFromValue(components.get("o3")).getCategory();
+                String so2Category = SO2PollutantCategories.getCategoryFromValue(components.get("so2")).getCategory();
                 logger.info("Categories: CO: {} O3: {} SO2: {}", coCategory, o3Category, so2Category);
 
                 // Create category maps
@@ -152,11 +143,11 @@ public class WeatherQualityService implements IWeatherQualityService
         return true;
     }
 
+    @Override
     public WeatherQueryResponseDto getWeatherQuality(String city, LocalDate startDate, LocalDate endDate)
     {
         String formattedCity = capitalize(city);
         isCityExist(formattedCity);
-        isDateValid(startDate, endDate);
 
         WeatherQuality weatherQuality = weatherQualityRepository.getWeatherQualityByCity(formattedCity);
 
@@ -246,6 +237,7 @@ public class WeatherQualityService implements IWeatherQualityService
         return null;
     }
 
+    @Override
     public boolean deleteRecord(String city, LocalDate startDate, LocalDate endDate)
     {
         logger.info("Deleting record for the city: {} between {} and {}", city, startDate, endDate);
@@ -267,6 +259,7 @@ public class WeatherQualityService implements IWeatherQualityService
         return true;
     }
 
+    @Override
     public WeatherQueryResponseDto getAllAirDataByCity(String city)
     {
         String formattedCity = capitalize(city);

@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.time.LocalDate;
@@ -27,7 +28,13 @@ public class WeatherQueryController
                                                                 @RequestParam(defaultValue = "#{T(java.time.LocalDate).now().minusDays(7)}") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                                                 @RequestParam(defaultValue = "#{T(java.time.LocalDateTime).now()}") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate)
     {
+        if (startDate.isBefore(LocalDate.of(2020, 10, 27)) || endDate.isBefore(LocalDate.of(2020, 10, 27)))
+        {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date. Only queries allowed after 2020-10-27");
+        }
+
         WeatherQueryResponseDto response = weatherQualityService.getWeatherQuality(city, startDate, endDate);
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
