@@ -8,7 +8,6 @@ import com.issola.weather.common.model.City;
 import com.issola.weather.common.model.WeatherQuality;
 import com.issola.weather.common.repository.ICityRepository;
 import com.issola.weather.common.repository.IWeatherQualityRepository;
-import com.issola.weather.web.client.IOpenWeatherClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,11 +26,8 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class WeatherQualityServiceTest {
@@ -42,15 +38,10 @@ class WeatherQualityServiceTest {
     @Mock
     private IWeatherQualityRepository weatherQualityRepository;
 
-    @Mock
-    private IOpenWeatherClient openWeatherClient;
-
     @InjectMocks
     private WeatherQualityService weatherQualityService;
 
-    private City testCity;
     private WeatherQuality testWeatherQuality;
-    private WeatherApiResultDto testWeatherApiResult;
     private LocalDate startDate;
     private LocalDate endDate;
 
@@ -60,7 +51,7 @@ class WeatherQualityServiceTest {
         endDate = LocalDate.now();
 
         // Setup test city
-        testCity = City.builder()
+        City testCity = City.builder()
                 .name("Istanbul")
                 .lat("41.0082")
                 .lon("28.9784")
@@ -84,7 +75,7 @@ class WeatherQualityServiceTest {
                 .components(components)
                 .build();
 
-        testWeatherApiResult = WeatherApiResultDto.builder()
+        WeatherApiResultDto testWeatherApiResult = WeatherApiResultDto.builder()
                 .list(List.of(listField))
                 .build();
     }
