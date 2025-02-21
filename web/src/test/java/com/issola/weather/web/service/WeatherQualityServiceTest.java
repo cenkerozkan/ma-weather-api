@@ -1,10 +1,7 @@
 package com.issola.weather.web.service;
 
 import com.issola.weather.common.dto.ResultsDatesDto;
-import com.issola.weather.common.dto.WeatherApiListFieldDto;
-import com.issola.weather.common.dto.WeatherApiResultDto;
 import com.issola.weather.common.dto.WeatherQueryResponseDto;
-import com.issola.weather.common.model.City;
 import com.issola.weather.common.model.WeatherQuality;
 import com.issola.weather.common.repository.ICityRepository;
 import com.issola.weather.common.repository.IWeatherQualityRepository;
@@ -17,10 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,14 +45,6 @@ class WeatherQualityServiceTest {
         startDate = LocalDate.now().minusDays(7);
         endDate = LocalDate.now();
 
-        // Setup test city
-        City testCity = City.builder()
-                .name("Istanbul")
-                .lat("41.0082")
-                .lon("28.9784")
-                .localNames(Map.of("en", "Istanbul"))
-                .build();
-
         // Setup weather quality
         testWeatherQuality = WeatherQuality.builder()
                 .city("Istanbul")
@@ -69,15 +56,6 @@ class WeatherQualityServiceTest {
         components.put("co", 1.0f);
         components.put("o3", 2.0f);
         components.put("so2", 3.0f);
-
-        WeatherApiListFieldDto listField = WeatherApiListFieldDto.builder()
-                .dt((int) LocalDate.now().atTime(12, 0).toEpochSecond(ZoneOffset.UTC))
-                .components(components)
-                .build();
-
-        WeatherApiResultDto testWeatherApiResult = WeatherApiResultDto.builder()
-                .list(List.of(listField))
-                .build();
     }
 
     @Test
