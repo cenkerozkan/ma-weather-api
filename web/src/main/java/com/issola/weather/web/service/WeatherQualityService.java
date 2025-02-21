@@ -142,11 +142,6 @@ public class WeatherQualityService implements IWeatherQualityService
             {
                 logger.info("Fetching missing data for {} dates", missingDates.size());
                 List<ResultsDto> results = fetchBatchOfData(formattedCity, missingDates.get(0), missingDates.get(missingDates.size() - 1));
-                // DEBUG
-                for (ResultsDto result : results)
-                {
-                    logger.info("Result date: {}", result.getDate());
-                }
                 for (ResultsDto result : results)
                 {
                     if (!existingDates.contains(result.getDate()))
