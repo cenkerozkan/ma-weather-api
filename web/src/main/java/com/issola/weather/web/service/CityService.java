@@ -32,8 +32,6 @@ public class CityService implements ICityService
     {
         City city = ICityRepository.findByName(name);
 
-        // TODO: Bring a better solution to handle
-        //       these kind of scenarios.
         if (city == null)
         {
             throw new ResponseStatusException(HttpStatus.NO_CONTENT);

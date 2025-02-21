@@ -1,5 +1,6 @@
 package com.issola.weather.web.service;
 
+import com.issola.weather.common.dto.ResultsDatesDto;
 import com.issola.weather.common.dto.WeatherApiListFieldDto;
 import com.issola.weather.common.dto.WeatherApiResultDto;
 import com.issola.weather.common.dto.WeatherQueryResponseDto;
@@ -26,9 +27,11 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 class WeatherQualityServiceTest {
@@ -88,10 +91,19 @@ class WeatherQualityServiceTest {
 
     @Test
     void getWeatherQuality_WithValidCity_ReturnsData() {
-        when(cityRepository.findByName("Istanbul")).thenReturn(testCity);
-        when(cityRepository.findAll()).thenReturn(List.of(testCity));
-        when(weatherQualityRepository.getWeatherQualityByCity("Istanbul")).thenReturn(testWeatherQuality);
-        when(openWeatherClient.getWeatherData(anyString())).thenReturn(testWeatherApiResult);
+        // Mock city validation
+        when(cityRepository.isCityExistsByName(anyString())).thenReturn(true);
+        
+        // Mock weather quality repository
+        when(weatherQualityRepository.getWeatherQualityByCity(anyString())).thenReturn(testWeatherQuality);
+        
+        // Mock findMissingDates
+        ResultsDatesDto resultsDatesDto = new ResultsDatesDto(new ArrayList<>());
+        when(weatherQualityRepository.findMissingDates(
+            anyString(), 
+            any(LocalDate.class), 
+            any(LocalDate.class)
+        )).thenReturn(resultsDatesDto);
 
         WeatherQueryResponseDto result = weatherQualityService.getWeatherQuality("Istanbul", startDate, endDate);
 
@@ -101,40 +113,21 @@ class WeatherQualityServiceTest {
 
     @Test
     void getWeatherQuality_WithInvalidCity_ThrowsException() {
-        when(cityRepository.findAll()).thenReturn(List.of(testCity));
+        when(cityRepository.isCityExistsByName(anyString())).thenReturn(false);
 
         assertThrows(ResponseStatusException.class, () ->
-            weatherQualityService.getWeatherQuality("NonExistent", startDate, endDate)
+            weatherQualityService.getWeatherQuality("nonexistent", startDate, endDate)
         );
     }
 
     @Test
     void deleteRecord_WithValidData_ReturnsTrue() {
-        when(weatherQualityRepository.getWeatherQualityByCity("Istanbul")).thenReturn(testWeatherQuality);
+        when(cityRepository.isCityExistsByName(anyString())).thenReturn(true);
+        when(weatherQualityRepository.getWeatherQualityByCity(anyString())).thenReturn(testWeatherQuality);
         doNothing().when(weatherQualityRepository).updateResultsByCity(anyString(), any());
 
         boolean result = weatherQualityService.deleteRecord("Istanbul", startDate, endDate);
 
         assertTrue(result);
-    }
-
-    @Test
-    void getAllAirDataByCity_WithValidCity_ReturnsData() {
-        when(cityRepository.findAll()).thenReturn(List.of(testCity));
-        when(weatherQualityRepository.getWeatherQualityByCity("Istanbul")).thenReturn(testWeatherQuality);
-
-        WeatherQueryResponseDto result = weatherQualityService.getAllAirDataByCity("Istanbul");
-
-        assertNotNull(result);
-        assertEquals("Istanbul", result.getCity());
-    }
-
-    @Test
-    void getAllAirDataByCity_WithInvalidCity_ThrowsException() {
-        when(cityRepository.findAll()).thenReturn(List.of(testCity));
-
-        assertThrows(ResponseStatusException.class, () ->
-            weatherQualityService.getAllAirDataByCity("NonExistent")
-        );
     }
 } 

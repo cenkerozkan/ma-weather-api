@@ -55,15 +55,21 @@ class OpenWeatherClientTest {
 
     @Test
     void getWeatherData_ReturnsWeatherApiResult() {
-        // TODO: Refactor this test method accordingly with the new
-        //       client.
-        String baseUrl = "http://api.example.com/weather";
-        String expectedUrl = baseUrl + "&appid=" + API_KEY;
+        String lat = "41.0082";
+        String lon = "28.9784";
+        long startDateEpoch = 1234567890L;
+        long endDateEpoch = 1234567899L;
+        String city = "Istanbul";
+        
+        String expectedUrl = String.format(
+            "http://api.openweathermap.org/data/2.5/air_pollution/history?lat=%s&lon=%s&start=%d&end=%d&appid=%s",
+            lat, lon, startDateEpoch, endDateEpoch, API_KEY
+        );
 
         when(httpRequestExecutor.executeGetRequest(eq(expectedUrl), eq(WeatherApiResultDto.class)))
                 .thenReturn(expectedResult);
 
-        WeatherApiResultDto result = openWeatherClient.getWeatherData(baseUrl);
+        WeatherApiResultDto result = openWeatherClient.getWeatherData(lat, lon, startDateEpoch, endDateEpoch, city);
 
         assertEquals(expectedResult, result);
     }

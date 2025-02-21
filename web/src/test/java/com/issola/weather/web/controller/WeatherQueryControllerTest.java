@@ -11,13 +11,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,6 +69,16 @@ class WeatherQueryControllerTest {
     }
 
     @Test
+    void queryWeather_WithInvalidDate_ThrowsBadRequest() {
+        LocalDate invalidStartDate = LocalDate.of(2020, 1, 1);
+        LocalDate invalidEndDate = LocalDate.of(2020, 1, 7);
+
+        assertThrows(ResponseStatusException.class, () ->
+            weatherQueryController.queryWeather("Istanbul", invalidStartDate, invalidEndDate)
+        );
+    }
+
+    @Test
     void deleteRecord_WhenSuccessful_ReturnsOk() {
         when(weatherQualityService.deleteRecord("Istanbul", startDate, endDate))
                 .thenReturn(true);
@@ -89,17 +100,5 @@ class WeatherQueryControllerTest {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("Record not found", response.getBody().get("message"));
-    }
-
-    @Test
-    void getAllAirDataByCity_ReturnsWeatherData() {
-        when(weatherQualityService.getAllAirDataByCity("Istanbul"))
-                .thenReturn(testResponse);
-
-        ResponseEntity<WeatherQueryResponseDto> response = 
-                weatherQueryController.getAllAirDataByCity("Istanbul");
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(testResponse, response.getBody());
     }
 } 
