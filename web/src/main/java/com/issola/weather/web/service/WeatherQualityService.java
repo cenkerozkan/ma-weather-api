@@ -23,9 +23,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -154,9 +156,14 @@ public class WeatherQualityService implements IWeatherQualityService
                 }
                 CompletableFuture.runAsync(() ->
                         weatherQualityRepository.updateResultsByCity(formattedCity, resultsDtos));
+                // Keep original if null or empty
                 return WeatherQueryResponseDto.builder()
                         .city(formattedCity)
-                        .results(resultsDtos)
+                        .results(resultsDtos.isEmpty() ?
+                                resultsDtos : // Keep original if null or empty
+                                resultsDtos.stream()
+                                        .sorted(Comparator.comparing(ResultsDto::getDate))
+                                        .collect(Collectors.toList()))
                         .build();
             }
         }
